@@ -41,10 +41,7 @@ if "%currentuser%" == "" set currentuser=Administrator
 echo Windows Server To Windows Desktop
 echo =================================
 ::PowerShell /Command "&{Get-WmiObject -Class Win32_OperatingSystem | Select-Object -ExpandProperty Caption}"
-set caption=
-for /f "skip=1 delims=" %%t in ('wmic os get caption') do (
-if not defined caption set caption=%%t
-)
+for /f "delims=" %%t in ('PowerShell /Command "&{(Get-CimInstance -ClassName Win32_OperatingSystem).Caption}"') do set caption=%%t
 echo %caption%
 echo %caption%|find /i "Windows Server">nul 2>nul
 if ERRORLEVEL 1 goto :OSERR
@@ -130,9 +127,9 @@ echo PasswordComplexity = 0 >>%gpfile%.inf
 secedit /configure /db %gpfile%.sdb /cfg %gpfile%.inf /log %gpfile%.log>nul 2>nul
 del %gpfile%.inf %gpfile%.sdb %gpfile%.log %gpfile%.jfm /f /q
 echo - %currentuser%'s Password never expires
-wmic Path Win32_UserAccount Where Name="%currentuser%" Set PasswordExpires="FALSE">nul
+PowerShell /Command "&{$user = Get-CimInstance -ClassName Win32_UserAccount -Filter \"Name = '%currentuser%'\"; Invoke-CimMethod -InputObject $user -MethodName SetPasswordExpires -Arguments @{PasswordExpires=$false}}">nul
 echo   PasswordExpires List:
-wmic useraccount get Name,PasswordExpires
+PowerShell /Command "&{Get-CimInstance -ClassName Win32_UserAccount | Select-Object Name,PasswordExpires}"
 echo - Disable Application Experience task schedulers
 schtasks /change /tn "\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" /disable>nul 2>nul
 schtasks /change /tn "\Microsoft\Windows\Application Experience\ProgramDataUpdater" /disable>nul 2>nul

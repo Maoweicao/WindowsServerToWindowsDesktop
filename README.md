@@ -1,6 +1,6 @@
 # WindowsServerToWindowsDesktop
 
-A bat script to auto config Windows Server 2016 to "Windows Desktop"
+A bat script to auto config Windows Server 2016 or newer version to "Windows Desktop"
 
 <img src="demo.png" width="979" />
 
